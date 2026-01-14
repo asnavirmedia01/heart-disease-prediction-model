@@ -116,7 +116,7 @@ with btn1:
 
 with btn2:
     if st.button("Reset"):
-        st.experimental_rerun()
+        st.rerun()
 
 # -------------------- Result Display --------------------
 if st.session_state.last_result:
