@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import joblib
 from io import BytesIO
+import numpy as np
 
 # -------------------- Page Config --------------------
 st.set_page_config(
@@ -9,197 +10,133 @@ st.set_page_config(
     layout="centered"
 )
 
-# -------------------- Load Model Artifacts --------------------
+# -------------------- Load Model --------------------
 try:
-    loaded_model = joblib.load("best_ada_model.joblib")
-    loaded_feature_names = joblib.load("feature_names.joblib")
-    loaded_label_encoders = joblib.load("label_encoders.joblib")
+    model = joblib.load("best_ada_model.joblib")
+    feature_names = joblib.load("feature_names.joblib")
+    label_encoders = joblib.load("label_encoders.joblib")
 except FileNotFoundError as e:
     st.error(f"Error loading model artifacts: {e}")
     st.stop()
 
 # -------------------- Prediction Function --------------------
-def predict_heart_disease(
-    Smoking: str,
-    Age: int,
-    Family_Heart_Disease: str,
-    BMI: float,
-    Cholesterol_Level: int,
-    Blood_Pressure: int,
-    Stress_Level: str,
-    Diabetes: str,
-    Homocysteine_Level: float
-) -> str:
+def predict_with_probability(input_data: dict):
+    df = pd.DataFrame([input_data])
 
-    input_raw_data = {
-        "Smoking": Smoking,
-        "Age": Age,
-        "Family Heart Disease": Family_Heart_Disease,
-        "BMI": BMI,
-        "Cholesterol Level": Cholesterol_Level,
-        "Blood Pressure": Blood_Pressure,
-        "Stress Level": Stress_Level,
-        "Diabetes": Diabetes,
-        "Homocysteine Level": Homocysteine_Level
-    }
+    # Encode categorical variables
+    for col, encoder in label_encoders.items():
+        if col in df.columns:
+            df[col] = encoder.transform(df[col])
 
-    input_df = pd.DataFrame([input_raw_data])
+    df = df[feature_names]
 
-    # Encode categorical features
-    for col, encoder in loaded_label_encoders.items():
-        if col in input_df.columns:
-            try:
-                input_df[col] = encoder.transform(input_df[col])
-            except ValueError:
-                return "Invalid input category detected"
+    prediction = model.predict(df)[0]
+    probability = model.predict_proba(df)[0][1]  # Probability of heart disease
 
-    # Ensure correct feature order
-    input_df = input_df[loaded_feature_names]
-
-    prediction = loaded_model.predict(input_df)[0]
-
-    return "High Risk of Heart Disease" if prediction == 1 else "Low Risk of Heart Disease"
+    return prediction, probability
 
 # -------------------- Session State --------------------
 if "records" not in st.session_state:
     st.session_state.records = []
 
-if "last_result" not in st.session_state:
-    st.session_state.last_result = None
-
-if "reset_trigger" not in st.session_state:
-    st.session_state.reset_trigger = False
-
-# -------------------- Default Values --------------------
-input_defaults = {
-    "smoking": "No",
-    "age": 45,
-    "bmi": 25.0,
-    "cholesterol_level": 200,
-    "stress_level": "Low",
-    "family_heart_disease": "No",
-    "blood_pressure": 120,
-    "diabetes": "No",
-    "homocysteine_level": 10.0
-}
-
 # -------------------- UI --------------------
 st.title("Heart Disease Prediction App")
 st.write(
-    "This application estimates heart disease risk using a trained machine learning model. "
-    "Results are for educational purposes only and not a medical diagnosis."
+    "This application estimates heart disease risk using a trained AdaBoost model. "
+    "Results are probabilistic and intended for educational purposes only."
 )
 
 st.header("Patient Information")
 
 col1, col2 = st.columns(2)
 
-# ---------- Column 1 ----------
 with col1:
-    smoking = st.selectbox("Smoking", ["No", "Yes"], key="smoking")
-    age = st.number_input("Age", 1, 120, value=input_defaults["age"], key="age")
+    smoking = st.selectbox("Smoking", ["No", "Yes"])
+    age = st.number_input("Age", 1, 120, value=45)
 
     bmi = st.number_input(
         "Body Mass Index (BMI)",
         10.0, 60.0,
         step=0.1,
-        value=input_defaults["bmi"],
-        key="bmi"
+        value=25.0
     )
     st.caption("BMI = weight (kg) / height² (m²)")
 
-    cholesterol_level = st.number_input(
-        "Cholesterol Level",
-        100, 400,
-        value=input_defaults["cholesterol_level"],
-        key="cholesterol_level"
-    )
+    cholesterol = st.number_input("Cholesterol Level", 100, 400, value=200)
+    stress = st.selectbox("Stress Level", ["Low", "Medium", "High"])
 
-    stress_level = st.selectbox(
-        "Stress Level",
-        ["Low", "Medium", "High"],
-        key="stress_level"
-    )
-
-# ---------- Column 2 ----------
 with col2:
-    family_heart_disease = st.selectbox(
-        "Family History of Heart Disease",
-        ["No", "Yes"],
-        key="family_heart_disease"
-    )
-
-    blood_pressure = st.number_input(
-        "Blood Pressure",
-        70, 250,
-        value=input_defaults["blood_pressure"],
-        key="blood_pressure"
-    )
-
-    diabetes = st.selectbox(
-        "Diabetes",
-        ["No", "Yes"],
-        key="diabetes"
-    )
-
-    homocysteine_level = st.number_input(
+    family_history = st.selectbox("Family History of Heart Disease", ["No", "Yes"])
+    blood_pressure = st.number_input("Blood Pressure", 70, 250, value=120)
+    diabetes = st.selectbox("Diabetes", ["No", "Yes"])
+    homocysteine = st.number_input(
         "Homocysteine Level",
         2.0, 50.0,
         step=0.1,
-        value=input_defaults["homocysteine_level"],
-        key="homocysteine_level"
+        value=10.0
     )
 
 st.markdown("---")
 
-# -------------------- Buttons --------------------
-btn1, btn2 = st.columns(2)
+# -------------------- Predict Button --------------------
+if st.button("Predict Risk"):
+    input_data = {
+        "Smoking": smoking,
+        "Age": age,
+        "Family Heart Disease": family_history,
+        "BMI": bmi,
+        "Cholesterol Level": cholesterol,
+        "Blood Pressure": blood_pressure,
+        "Stress Level": stress,
+        "Diabetes": diabetes,
+        "Homocysteine Level": homocysteine
+    }
 
-with btn1:
-    if st.button("Predict"):
-        result = predict_heart_disease(
-            Smoking=smoking,
-            Age=age,
-            Family_Heart_Disease=family_heart_disease,
-            BMI=bmi,
-            Cholesterol_Level=cholesterol_level,
-            Blood_Pressure=blood_pressure,
-            Stress_Level=stress_level,
-            Diabetes=diabetes,
-            Homocysteine_Level=homocysteine_level
-        )
+    pred, prob = predict_with_probability(input_data)
+    risk_percent = prob * 100
 
-        st.session_state.last_result = result
-
-        st.session_state.records.append({
-            "Smoking": smoking,
-            "Age": age,
-            "Family Heart Disease": family_heart_disease,
-            "BMI": bmi,
-            "Cholesterol Level": cholesterol_level,
-            "Blood Pressure": blood_pressure,
-            "Stress Level": stress_level,
-            "Diabetes": diabetes,
-            "Homocysteine Level": homocysteine_level,
-            "Prediction": result
-        })
-
-with btn2:
-    if st.button("Reset"):
-        st.session_state.clear()
-        st.rerun()
-
-# -------------------- Result Display (COLOR FIXED) --------------------
-if st.session_state.last_result:
+    # -------------------- Risk Band Logic --------------------
     st.subheader("Prediction Result")
 
-    if st.session_state.last_result == "High Risk of Heart Disease":
-        st.error(st.session_state.last_result)   # 🔴 RED
+    if risk_percent < 40:
+        st.success(f"Low Risk of Heart Disease ({risk_percent:.2f}% confidence)")
+        risk_label = "Low Risk"
+    elif 40 <= risk_percent <= 70:
+        st.warning(f"Borderline Risk of Heart Disease ({risk_percent:.2f}% confidence)")
+        risk_label = "Borderline Risk"
     else:
-        st.success(st.session_state.last_result) # 🟢 GREEN
+        st.error(f"High Risk of Heart Disease ({risk_percent:.2f}% confidence)")
+        risk_label = "High Risk"
+
+    # Save record
+    st.session_state.records.append({
+        **input_data,
+        "Risk Level": risk_label,
+        "Risk Probability (%)": round(risk_percent, 2)
+    })
+
+    # -------------------- Feature Importance --------------------
+    st.markdown("---")
+    st.subheader("Top Contributing Features (Model-Level)")
+
+    importances = model.feature_importances_
+    importance_df = pd.DataFrame({
+        "Feature": feature_names,
+        "Importance": importances
+    }).sort_values(by="Importance", ascending=False).head(6)
+
+    st.bar_chart(
+        importance_df.set_index("Feature")
+    )
+
+    st.caption(
+        "Feature importance reflects the overall influence of features in the trained model, "
+        "not individual patient-specific explanations."
+    )
 
 # -------------------- Records & Excel Export --------------------
 if st.session_state.records:
+    st.markdown("---")
     st.subheader("Patient Records")
 
     df = pd.DataFrame(st.session_state.records)
