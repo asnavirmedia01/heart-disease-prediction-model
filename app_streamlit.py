@@ -96,49 +96,28 @@ col1, col2 = st.columns(2)
 
 # ---------- Column 1 ----------
 with col1:
-    smoking = st.selectbox(
-        "Smoking",
-        ["No", "Yes"],
-        index=0 if st.session_state.reset_trigger else ["No", "Yes"].index(
-            st.session_state.get("smoking", input_defaults["smoking"])
-        ),
-        key="smoking"
-    )
-
-    age = st.number_input(
-        "Age",
-        min_value=1,
-        max_value=120,
-        value=input_defaults["age"] if st.session_state.reset_trigger else st.session_state.get("age", input_defaults["age"]),
-        key="age"
-    )
+    smoking = st.selectbox("Smoking", ["No", "Yes"], key="smoking")
+    age = st.number_input("Age", 1, 120, value=input_defaults["age"], key="age")
 
     bmi = st.number_input(
         "Body Mass Index (BMI)",
-        min_value=10.0,
-        max_value=60.0,
+        10.0, 60.0,
         step=0.1,
-        value=input_defaults["bmi"] if st.session_state.reset_trigger else st.session_state.get("bmi", input_defaults["bmi"]),
+        value=input_defaults["bmi"],
         key="bmi"
     )
-
     st.caption("BMI = weight (kg) / height² (m²)")
 
     cholesterol_level = st.number_input(
         "Cholesterol Level",
-        min_value=100,
-        max_value=400,
-        step=1,
-        value=input_defaults["cholesterol_level"] if st.session_state.reset_trigger else st.session_state.get("cholesterol_level", input_defaults["cholesterol_level"]),
+        100, 400,
+        value=input_defaults["cholesterol_level"],
         key="cholesterol_level"
     )
 
     stress_level = st.selectbox(
         "Stress Level",
         ["Low", "Medium", "High"],
-        index=0 if st.session_state.reset_trigger else ["Low", "Medium", "High"].index(
-            st.session_state.get("stress_level", input_defaults["stress_level"])
-        ),
         key="stress_level"
     )
 
@@ -147,42 +126,29 @@ with col2:
     family_heart_disease = st.selectbox(
         "Family History of Heart Disease",
         ["No", "Yes"],
-        index=0 if st.session_state.reset_trigger else ["No", "Yes"].index(
-            st.session_state.get("family_heart_disease", input_defaults["family_heart_disease"])
-        ),
         key="family_heart_disease"
     )
 
     blood_pressure = st.number_input(
         "Blood Pressure",
-        min_value=70,
-        max_value=250,
-        step=1,
-        value=input_defaults["blood_pressure"] if st.session_state.reset_trigger else st.session_state.get("blood_pressure", input_defaults["blood_pressure"]),
+        70, 250,
+        value=input_defaults["blood_pressure"],
         key="blood_pressure"
     )
 
     diabetes = st.selectbox(
         "Diabetes",
         ["No", "Yes"],
-        index=0 if st.session_state.reset_trigger else ["No", "Yes"].index(
-            st.session_state.get("diabetes", input_defaults["diabetes"])
-        ),
         key="diabetes"
     )
 
     homocysteine_level = st.number_input(
         "Homocysteine Level",
-        min_value=2.0,
-        max_value=50.0,
+        2.0, 50.0,
         step=0.1,
-        value=input_defaults["homocysteine_level"] if st.session_state.reset_trigger else st.session_state.get("homocysteine_level", input_defaults["homocysteine_level"]),
+        value=input_defaults["homocysteine_level"],
         key="homocysteine_level"
     )
-
-# Clear reset flag after render
-if st.session_state.reset_trigger:
-    st.session_state.reset_trigger = False
 
 st.markdown("---")
 
@@ -220,14 +186,17 @@ with btn1:
 
 with btn2:
     if st.button("Reset"):
-        st.session_state.reset_trigger = True
-        st.session_state.last_result = None
+        st.session_state.clear()
         st.rerun()
 
-# -------------------- Result Display --------------------
+# -------------------- Result Display (COLOR FIXED) --------------------
 if st.session_state.last_result:
     st.subheader("Prediction Result")
-    st.success(st.session_state.last_result)
+
+    if st.session_state.last_result == "High Risk of Heart Disease":
+        st.error(st.session_state.last_result)   # 🔴 RED
+    else:
+        st.success(st.session_state.last_result) # 🟢 GREEN
 
 # -------------------- Records & Excel Export --------------------
 if st.session_state.records:
