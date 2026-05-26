@@ -1,3 +1,5 @@
+<img width="1365" height="647" alt="588237101-faed5048-7db2-4d80-927a-729182aebdc8" src="https://github.com/user-attachments/assets/7a1516ef-0f93-45b3-a872-3f6e0b0d5ce3" />
+
 # Heart Disease Prediction Project
 
 ## Table of Contents
@@ -165,8 +167,9 @@ The application:
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository_url>
-cd heart-disease-prediction
+git clone <(https://github.com/asnavirmedia01/heart-disease-prediction-model.git)>
+cd heart-disease-prediction-model
+
 ```
 
 ### 2. Install Dependencies
