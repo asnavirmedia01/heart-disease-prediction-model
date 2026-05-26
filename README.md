@@ -1,16 +1,24 @@
-<img width="1365" height="647" alt="Screenshot 2026-05-06 040714" src="https://github.com/user-attachments/assets/faed5048-7db2-4d80-927a-729182aebdc8" />
-
 # Heart Disease Prediction Project
 
-## 📝 Project Overview
+## Table of Contents
 
-This project aims to develop a machine learning model capable of predicting the likelihood of heart disease in individuals based on various health and lifestyle factors. By leveraging a comprehensive dataset containing patient information, we perform exploratory data analysis, preprocess the data, and train several classification models to identify the most effective predictor. The ultimate goal is to provide a robust tool for early risk assessment, which can assist healthcare professionals in identifying at-risk individuals and guiding preventive measures.
+1. [Problem Statement](#problem-statement)
+2. [Dataset](#dataset)
+3. [Exploratory Data Analysis and Preprocessing](#exploratory-data-analysis-and-preprocessing)
+4. [Feature Engineering and Selection](#feature-engineering-and-selection)
+5. [Model Training and Evaluation](#model-training-and-evaluation)
+6. [Best Model and Performance](#best-model-and-performance)
+7. [Deployment with Streamlit](#deployment-with-streamlit)
+8. [How to Run the Project](#how-to-run-the-project)
+9. [Conclusion](#conclusion)
 
-## 📊 Dataset
+## Problem Statement
+Heart disease remains a leading cause of mortality worldwide. Early and accurate prediction of heart disease is crucial for timely intervention and improved patient outcomes. This project aims to develop a machine learning model to predict the presence of heart disease based on various health indicators and lifestyle factors.
 
-The dataset used in this project contains detailed health records for patients, including demographic information, physiological measurements, and lifestyle habits. It comprises `1500` entries and `16` features, with `Heart Disease Status` as the target variable.
+## Dataset
+The dataset used in this project contains various health-related features and a target variable indicating the presence or absence of heart disease. It includes demographic information, vital signs, and laboratory results.
 
-Here's a glimpse of the dataset:
+Here's a glimpse of the data:
 
 ```
    Age  Gender  Blood Pressure  Cholesterol Level Exercise Habits Smoking  \
@@ -31,7 +39,8 @@ Here's a glimpse of the dataset:
 0                 293                  116       6.23               15.75   
 1                 134                   72       8.36               11.83   
 2                 124                  111       1.62               12.52   
-3                  82                  136       8.66               18.38   n4                 296                  147       9.46               15.51   
+3                  82                  136       8.66               18.38   
+4                 296                  147       9.46               15.51   
 
   Heart Disease Status  
 0                  Yes  
@@ -41,41 +50,47 @@ Here's a glimpse of the dataset:
 4                   No  
 ```
 
-### Key Features
+## Exploratory Data Analysis (EDA) & Preprocessing
+-   **Missing Values**: The dataset was checked for missing values, and none were found.
+-   **Duplicate Rows**: No duplicate rows were identified.
+-   **Outliers**: Outliers were analyzed using IQR method and boxplots, revealing no significant outliers across numerical features.
+-   **Data Distribution**: Histograms were generated for numerical features to understand their distributions. Count plots were used for categorical features.
+-   **Correlation Analysis**: A correlation heatmap was generated to visualize relationships between numerical features, identifying potential multicollinearity and feature importance.
+-   **Target Distribution**: The distribution of 'Heart Disease Status' was analyzed, showing a relatively balanced dataset.
+-   **Categorical Encoding**: All categorical columns were encoded using `LabelEncoder` to convert them into numerical representations suitable for machine learning models. The mapping for each encoding is explicitly shown.
 
-*   **Demographic**: `Age`, `Gender`
-*   **Physiological**: `Blood Pressure`, `Cholesterol Level`, `BMI`, `Triglyceride Level`, `Fasting Blood Sugar`, `CRP Level`, `Homocysteine Level`
-*   **Lifestyle**: `Exercise Habits`, `Smoking`, `Sleep Hours`, `Stress Level`
-*   **Medical History**: `Family Heart Disease`, `Diabetes`
-*   **Target Variable**: `Heart Disease Status`
+## Feature Engineering & Selection
+-   **Feature Importance**: Decision Tree Classifier's feature importances were calculated to identify the most influential features. The following features were identified as important:
+    -   `Smoking`
+    -   `Age`
+    -   `Family Heart Disease`
+    -   `BMI`
+    -   `Cholesterol Level`
+    -   `Blood Pressure`
+    -   `Stress Level`
+    -   `Diabetes`
+    -   `Homocysteine Level`
+-   **Dimensionality Reduction**: The dataset was reduced to include only these important features for model training, aiming to improve model performance and reduce complexity.
 
-## 🛠️ Methodology
+## Model Training and Evaluation
+Several classification models were trained and evaluated on the preprocessed and scaled dataset to predict heart disease. The models included:
+-   Decision Tree Classifier (with hyperparameter tuning using GridSearchCV)
+-   Logistic Regression
+-   K-Nearest Neighbors (KNN)
+-   Support Vector Machine (SVM)
+-   Random Forest Classifier
+-   Gradient Boosting Classifier
+-   AdaBoost Classifier
+-   Gaussian Naive Bayes
+-   XGBoost Classifier
+-   LightGBM Classifier
 
-The project follows a standard machine learning workflow:
+Models were evaluated using metrics such as accuracy, recall (especially for class 1 - 'Heart Disease Detected'), precision, and F1-score. ROC curves and AUC scores were also generated for each model to assess their discriminative power.
 
-1.  **Data Loading and Initial Exploration**: The dataset was loaded and initial checks for missing values, duplicates, and data types were performed.
-2.  **Exploratory Data Analysis (EDA)**: Visualizations (histograms, boxplots, count plots, heatmaps) were used to understand feature distributions, relationships, and potential outliers. Correlation analysis helped in identifying highly correlated features and feature importance.
-3.  **Data Preprocessing**: Categorical features were encoded using `LabelEncoder`. The dataset was split into training and testing sets. Feature scaling was applied to numerical features using `StandardScaler` for some models, but ultimately, the model trained on unscaled, feature-reduced data performed best.
-4.  **Model Training and Evaluation**: Several classification algorithms were trained and evaluated, including:
-    *   Logistic Regression
-    *   K-Nearest Neighbors (KNN)
-    *   Support Vector Machine (SVM)
-    *   Decision Tree Classifier (with hyperparameter tuning via GridSearchCV)
-    *   Random Forest
-    *   Gradient Boosting
-    *   AdaBoost
-    *   XGBoost
-    *   LightGBM
+## Best Model & Performance
+Based on the evaluation, **AdaBoost Classifier** emerged as the best-performing model, achieving a perfect score across accuracy and recall for class 1 on the test set. This indicates its strong capability in correctly identifying individuals with heart disease.
 
-    Models were evaluated based on metrics like Accuracy, Recall, Precision, F1-Score, and ROC AUC, with a particular focus on **Recall for the positive class (Heart Disease Detected)** due to the nature of the problem (minimizing false negatives).
-5.  **Feature Selection**: Based on feature importance analysis from a preliminary Decision Tree model, a subset of the most impactful features was selected to reduce model complexity and potentially improve performance.
-6. **Model Selection**: AdaBoost was identified as the best performing model on the feature-reduced dataset.
-
-## 🚀 Results
-
-After comprehensive evaluation, the **AdaBoost Classifier** emerged as the top-performing model, achieving outstanding metrics on the test set when trained on the reduced feature set (features with importance > 0.01). The model was able to achieve **100% Accuracy and Recall for the 'Heart Disease Detected' class**.
-
-### Best Model Performance (AdaBoost)
+**Confusion Matrix for AdaBoost (Best Model):**
 
 ```
               precision    recall  f1-score   support
@@ -88,22 +103,33 @@ After comprehensive evaluation, the **AdaBoost Classifier** emerged as the top-p
 weighted avg       1.00      1.00      1.00       300
 ```
 
+This high performance was achieved after feature selection, which focused the models on the most impactful features.
 
-## 📦 Deployment
+## Deployment with Streamlit
+A Streamlit application `app_streamlit.py` has been developed to provide a user-friendly interface for predicting heart disease. This app allows users to input patient information and receive instant predictions. The application utilizes the best-performing AdaBoost model and the saved preprocessing artifacts (label encoders and feature names) to ensure consistent predictions.
 
-A Streamlit application `app_streamlit.py` has been created to provide an interactive interface for predicting heart disease. This application allows users to input patient details and receive an immediate risk assessment.
+## How to Run the Project
+To run this project and the Streamlit application, follow these steps:
 
-### How to Run the Streamlit App
-
-1.  **Download necessary files**: Download `app_streamlit.py`, `best_ada_model.joblib`, `feature_names.joblib`, and `label_encoders.joblib` from the Colab environment.
-2.  **Install Streamlit**: If you don't have Streamlit installed, open your terminal or command prompt and run:
+1.  **Clone the Repository (or download the notebook and files)**:
     ```bash
-    pip install streamlit
+    git clone <repository_url>
+    cd heart-disease-prediction
     ```
-3.  **Place files**: Ensure all downloaded files are in the same directory.
-4.  **Run the app**: Navigate to that directory in your terminal and execute:
+
+2.  **Ensure you have the necessary files**: Make sure you have the trained model (`best_ada_model.joblib`), feature names (`feature_names.joblib`), and label encoders (`label_encoders.joblib`) in the same directory as `app_streamlit.py`. These files are generated by running the corresponding cells in the Jupyter notebook.
+
+3.  **Install Dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+    (A `requirements.txt` file should contain: `pandas`, `scikit-learn`, `streamlit`, `joblib`, `openpyxl`, `matplotlib`, `seaborn`, `xgboost`, `lightgbm`)
+
+4.  **Run the Streamlit Application**:
     ```bash
     https://heart-disease-prediction-model-fcguwhrgskihrigrjrpddx.streamlit.app/
     ```
+    This will open the application in your web browser.
 
-This will open the application in your web browser, allowing you to interact with the Heart Disease Prediction model.
+## Conclusion
+This project successfully developed a robust machine learning pipeline for heart disease prediction, from data loading and comprehensive EDA to model training, evaluation, and deployment. The AdaBoost model demonstrated exceptional performance, making it a valuable tool for assisting in early risk assessment. The Streamlit application provides an accessible way for potential users to interact with the model.
