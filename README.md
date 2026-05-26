@@ -22,7 +22,11 @@ Heart disease remains a leading cause of mortality worldwide. Early and accurate
 
 ## Dataset
 The dataset used in this project contains various health-related features and a target variable indicating the presence or absence of heart disease. It includes demographic information, vital signs, and laboratory results.
+### Dataset Source
 
+```text
+https://github.com/asnavirmedia01/heart-disease-prediction-model/blob/a9cd2451031e17c08593e80fb440e5e13e5f1cf3/heart_disease_dataset.csv
+```
 Here's a glimpse of the data:
 
 ```python
