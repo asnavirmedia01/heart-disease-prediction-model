@@ -4,7 +4,7 @@
 
 1. [Problem Statement](#problem-statement)
 2. [Dataset](#dataset)
-3. [Exploratory Data Analysis and Preprocessing](#exploratory-data-analysis-and-preprocessing)
+3. [Exploratory Data Analysis (EDA) & Preprocessing](Exploratory-Data-Analysis-(EDA)-&-Preprocessing)
 4. [Feature Engineering and Selection](#feature-engineering-and-selection)
 5. [Model Training and Evaluation](#model-training-and-evaluation)
 6. [Best Model and Performance](#best-model-and-performance)
